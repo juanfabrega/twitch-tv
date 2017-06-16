@@ -2,6 +2,8 @@
 
 > A small web app that displays broadcast status of a variety of twitch channels.
 
+> NOTE: project is still in development and not functional at this time.
+
 ## Build Setup
 
 ``` bash
