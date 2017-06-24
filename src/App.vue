@@ -15,14 +15,14 @@
     <div id="container">
       <!--cards with streamer information, generated via vue directives-->
       <md-layout :md-gutter="16">
-        <md-layout md-flex-xsmall="100" md-flex-medium="50" v-for="streamer in streamers" :key="streamer.key">
-          <md-card md-with-hover>
+        <md-layout md-flex-xsmall="100" md-flex-medium="50">
+          <md-card md-with-hover v-for="streamer in streamers" :key="streamer.key">
             <md-card-header>
               <div>
-                <img id="profile-img" src="./assets/twitch-logo.png">
+                <img id="profile-img" v-bind:src=streamer.channel.profileImgUrl>
                 <div id="head-subhead">
                 <h3 class="md-title">{{ streamer.channel.channelName }}</h3>
-                <p class="md-subhead">Subtitle here</p>
+                <p class="md-subhead"><em>{{ streamer.channel.followers }} Followers</em></p>
                 </div>
               </div>
             </md-card-header>
@@ -31,7 +31,7 @@
             </md-card-content>
 
             <md-card-actions>
-              <md-button class="not-streaming" v-bind:class="{ streaming : streamer.currentStream.active }"><md-icon>videocam</md-icon></md-button>
+              <md-button class="not-streaming" v-bind:class="{ streaming : streamer.stream.active }"><md-icon>videocam</md-icon></md-button>
             </md-card-actions>
           </md-card>
         </md-layout>
@@ -45,64 +45,13 @@
 
 export default {
   name: 'app',
-  //mounted: function() {
-    //this.getChannelInfo()
-  //},
+  mounted: function() {
+    this.getChannelInfo();
+    console.log(this);
+  },
   data () {
     return {
-      streamers: [
-        {
-          key: '1',
-          channel: {
-            channelName: 'channel1',
-            bio: '',
-            profileImgUrl: '',
-            bannerImgUrl: '',
-            followers: 0,
-            channelUrl: ''
-          },
-          currentStream: {
-            active: false,
-            streamingGame: '',
-            viewers: 0,
-            previewImgUrl: ''
-          }
-        },
-        {
-          key: '2',
-          channel: {
-            channelName: 'channel2',
-            bio: '',
-            profileImgUrl: '',
-            bannerImgUrl: '',
-            followers: 0,
-            channelUrl: ''
-          },
-          currentStream: {
-            active: false,
-            streamingGame: '',
-            viewers: 0,
-            previewImgUrl: ''
-          }
-        },
-        {
-          key: '3',
-          channel: {
-            channelName: 'channel3',
-            bio: '',
-            profileImgUrl: '',
-            bannerImgUrl: '',
-            followers: 0,
-            channelUrl: ''
-          },
-          currentStream: {
-            active: false,
-            streamingGame: '',
-            viewers: 0,
-            previewImgUrl: ''
-          }
-        }
-      ],
+      streamers: [],
       users: [
         "ESL_SC2",
         "OgamingSC2",
@@ -116,14 +65,45 @@ export default {
   },
   methods: {
     getChannelInfo: function() {
-      // GET /someUrl
-      this.$http.get('https://api.twitch.tv/kraken/channels/freecodecamp?client_id=94zaltt5of3jzoq8zeofdz0bxt26tk').then(response => {
+      for (let i = 0; i < this.users.length; i++) {
+        this.$http.get('https://api.twitch.tv/kraken/channels/' + this.users[i] + '?client_id=94zaltt5of3jzoq8zeofdz0bxt26tk').then(response => {
+          console.log(response);
+          // get body data
+          this.streamers[i] =
+            {
+              key: response.body._id,
+              channel: {
+                channelName: response.body.display_name,
+                bio: response.body.status,
+                profileImgUrl: response.body.logo,
+                followers: response.body.followers,
+                channelUrl: response.body.url
+              },
+              stream: {
+                active: false
+              }
+            };
+        },
+        response => {
+          console.log('Channels API call unsuccessful.');
+        });
+      }
+    },
+    getStreamInfo: function(i) {
+      this.$http.get('https://api.twitch.tv/kraken/streams/' + this.users[i] + '?client_id=94zaltt5of3jzoq8zeofdz0bxt26tk').then(response => {
+        if (response.body.stream != null) {
+          this.streamers[i].stream =
+            {
+              active: true,
+              streamingGame: response.body.stream.game,
+              viewers: response.body.stream.viewers,
+              previewImgUrl: response.body.stream.preview.large
+            }
+        }
         console.log(response);
-        // get body data
-        this.streamers[0].channel.channelName = response.body.display_name;
-
-      }, response => {
-        // error callback
+      },
+      response => {
+        console.log('Streams API call unsuccessful');
       });
     }
   }
@@ -150,6 +130,7 @@ export default {
 
   .md-card {
     margin-bottom: 16px;
+    width: 100%;
   }
 
   #profile-img {
