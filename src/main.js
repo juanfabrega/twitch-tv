@@ -5,9 +5,12 @@ import App from './App'
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.css'
 import VueResource from 'vue-resource'
+import lodash from 'lodash'
+import VueLodash from 'vue-lodash/dist/vue-lodash.min'
 
 Vue.use(VueMaterial)
 Vue.use(VueResource)
+Vue.use(VueLodash, lodash)
 
 Vue.config.productionTip = false
 

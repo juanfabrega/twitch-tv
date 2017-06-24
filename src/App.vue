@@ -15,7 +15,8 @@
     <div id="container">
       <!--cards with streamer information, generated via vue directives-->
       <md-layout :md-gutter="16">
-        <md-layout md-flex-xsmall="100" md-flex-medium="50">
+        <!--TODO Need to figure out how TF to structure this IF statement to prevent async load errors-->
+        <md-layout md-flex-xsmall="100" md-flex-medium="50" v-if="streamers[8].key">
           <md-card md-with-hover v-for="streamer in streamers" :key="streamer.key">
             <md-card-header>
               <div>
@@ -42,12 +43,13 @@
 </template>
 
 <script>
+import Vue from 'vue'
 
 export default {
   name: 'app',
   mounted: function() {
     this.getChannelInfo();
-    console.log(this);
+    this.getStreamInfo();
   },
   data () {
     return {
@@ -60,7 +62,9 @@ export default {
         "storbeck",
         "habathcx",
         "RobotCaleb",
-        "noobs2ninjas"]
+        "ninja",
+        "garenatw"
+      ]
     }
   },
   methods: {
@@ -68,8 +72,8 @@ export default {
       for (let i = 0; i < this.users.length; i++) {
         this.$http.get('https://api.twitch.tv/kraken/channels/' + this.users[i] + '?client_id=94zaltt5of3jzoq8zeofdz0bxt26tk').then(response => {
           console.log(response);
-          // get body data
-          this.streamers[i] =
+
+          Vue.set(this.streamers, i,
             {
               key: response.body._id,
               channel: {
@@ -82,29 +86,40 @@ export default {
               stream: {
                 active: false
               }
-            };
+            });
         },
         response => {
           console.log('Channels API call unsuccessful.');
         });
       }
     },
-    getStreamInfo: function(i) {
-      this.$http.get('https://api.twitch.tv/kraken/streams/' + this.users[i] + '?client_id=94zaltt5of3jzoq8zeofdz0bxt26tk').then(response => {
-        if (response.body.stream != null) {
-          this.streamers[i].stream =
-            {
-              active: true,
-              streamingGame: response.body.stream.game,
-              viewers: response.body.stream.viewers,
-              previewImgUrl: response.body.stream.preview.large
-            }
-        }
-        console.log(response);
-      },
-      response => {
-        console.log('Streams API call unsuccessful');
-      });
+    getStreamInfo: function() {
+      for (let i = 0; i < this.users.length; i++) {
+        this.$http.get('https://api.twitch.tv/kraken/streams/' + this.users[i] + '?client_id=94zaltt5of3jzoq8zeofdz0bxt26tk').then(response => {
+          if (response.body.stream != null) {
+            Vue.set(this.streamers[i], 'stream',
+              {
+                active: true,
+                streamingGame: response.body.stream.game,
+                viewers: response.body.stream.viewers,
+                previewImgUrl: response.body.stream.preview.large
+              });
+          }
+          else {
+            Vue.set(this.streamers[i], 'stream',
+              {
+                active: false,
+                streamingGame: '',
+                viewers: 0,
+                previewImgUrl: ''
+              });
+          }
+          console.log(response);
+        },
+        response => {
+          console.log('Streams API call unsuccessful');
+        });
+      }
     }
   }
 }
