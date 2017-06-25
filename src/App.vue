@@ -16,8 +16,8 @@
       <!--cards with streamer information, generated via vue directives-->
       <md-layout :md-gutter="16">
         <!--TODO Need to figure out how TF to structure this IF statement to prevent async load errors-->
-        <md-layout md-flex-xsmall="100" md-flex-medium="50" v-if="streamers[8].key">
-          <md-card md-with-hover v-for="streamer in streamers" :key="streamer.key">
+        <md-layout md-flex-xsmall="100" md-flex-medium="50" md-flex-large="25" v-for="streamer in streamers" :key="streamer.key">
+          <md-card md-with-hover>
             <md-card-header>
               <div>
                 <img id="profile-img" v-bind:src=streamer.channel.profileImgUrl>
