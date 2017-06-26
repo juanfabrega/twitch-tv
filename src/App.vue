@@ -17,23 +17,36 @@
       <md-layout :md-gutter="16">
         <!--TODO Need to figure out how TF to structure this IF statement to prevent async load errors-->
         <md-layout md-flex-xsmall="100" md-flex-medium="50" md-flex-large="25" v-for="streamer in streamers" :key="streamer.key">
-          <md-card md-with-hover>
+          <md-card id="card" md-with-hover v-bind:href="streamer.channel.channelUrl" target="_blank">
             <md-card-header>
               <div>
-                <img id="profile-img" v-bind:src=streamer.channel.profileImgUrl>
+                <img v-if="streamer.channel.profileImgUrl" id="profile-img" v-bind:src=streamer.channel.profileImgUrl>
+                <img v-else id="profile-img" src="./assets/twitch-logo.png">
                 <div id="head-subhead">
-                <h3 class="md-title">{{ streamer.channel.channelName }}</h3>
-                <p class="md-subhead"><em>{{ streamer.channel.followers }} Followers</em></p>
+                  <h3 class="md-title">{{ streamer.channel.channelName }}</h3>
+                  <p class="md-subhead"><em>{{ streamer.channel.followers }} Followers</em></p>
                 </div>
               </div>
             </md-card-header>
             <md-card-content>
               {{ streamer.channel.bio }}
             </md-card-content>
-
-            <md-card-actions>
-              <md-button class="not-streaming" v-bind:class="{ streaming : streamer.stream.active }"><md-icon>videocam</md-icon></md-button>
-            </md-card-actions>
+            <md-card-content id="stream-status">
+              <h3 class="not-streaming" v-bind:class="{ streaming : streamer.stream.active }"><md-icon>videocam</md-icon></h3>
+            </md-card-content>
+            <md-card-content v-if="streamer.stream.active" id="active-stream">
+              <div>
+                <img id="stream-img" v-bind:src=streamer.stream.previewImgUrl>
+                <div class="stream-info">
+                  <p class="stream-right-text"><md-icon>videogame_asset</md-icon> {{ streamer.stream.streamingGame }}</p>
+                  <p class="stream-right-text"><md-icon>people</md-icon> {{ streamer.stream.viewers }}</p>
+                </div>
+              </div>
+            </md-card-content>
+            <div id="invisible"></div>
+            <div id="channel-link">
+              <h4 class="channel-link-txt"><a id="anchor-override" v-bind:href="streamer.channel.channelUrl" target="_blank">GO TO CHANNEL <md-icon>chevron_right</md-icon></a></h4>
+            </div>
           </md-card>
         </md-layout>
       </md-layout>
@@ -63,8 +76,10 @@ export default {
         "habathcx",
         "RobotCaleb",
         "ninja",
-        "garenatw"
-      ]
+        "garenatw",
+        "comster404"
+      ],
+      default_img: '.assets/twitch-logo-large.png'
     }
   },
   methods: {
@@ -89,7 +104,21 @@ export default {
             });
         },
         response => {
-          console.log('Channels API call unsuccessful.');
+          console.log('Could not reach API or account does not exist');
+          Vue.set(this.streamers, i,
+            {
+              key: response.body.status + i,
+              channel: {
+                channelName: this.users[i],
+                bio: 'Channel does not exist',
+                profileImgUrl: null,
+                followers: 0,
+                channelUrl: 'http://www.twitch.tv'
+              },
+              stream: {
+                active: false
+              }
+            });
         });
       }
     },
@@ -117,7 +146,7 @@ export default {
           console.log(response);
         },
         response => {
-          console.log('Streams API call unsuccessful');
+          console.log('Could not reach API or account does not exist');
         });
       }
     }
@@ -143,9 +172,17 @@ export default {
     display: inline-block;
   }
 
+  #card {
+    position: relative;
+  }
+
   .md-card {
     margin-bottom: 16px;
     width: 100%;
+  }
+
+  .md-card-actions {
+    padding: 16px;
   }
 
   #profile-img {
@@ -153,6 +190,18 @@ export default {
     height: 50px;
     object-fit: cover;
     border-radius: 50%;
+    margin-right: 10px;
+    vertical-align: top;
+  }
+
+  #active-stream {
+    padding: 0 16px 16px 16px;
+  }
+
+  #stream-img {
+    width: 50%;
+    height: auto;
+    object-fit: cover;
     margin-right: 10px;
     vertical-align: top;
   }
@@ -172,6 +221,35 @@ export default {
     background-color: #fff;
   }
 
+  #stream-status {
+    border-top: 1px solid #ccc;
+    padding: 0 16px;
+  }
+
+  #anchor-override {
+    color: #6441A4;
+  }
+
+  #anchor-override:hover {
+    text-decoration: none;
+  }
+
+  #channel-link {
+    border-top: 1px solid #ccc;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+  }
+
+  #invisible {
+    width: 100%;
+    height: 62px;
+  }
+
+  .channel-link-txt {
+    text-align: center;
+  }
+
   .not-streaming {
     color: red;
   }
@@ -189,5 +267,17 @@ export default {
   .streaming:before {
     content: 'NOW STREAMING';
     vertical-align: middle;
+  }
+
+  .stream-img-container {
+    display: inline-block;
+  }
+
+  .stream-info {
+    display: inline-block;
+  }
+
+  .stream-right-text {
+    display: block;
   }
 </style>
