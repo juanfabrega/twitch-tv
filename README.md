@@ -2,7 +2,11 @@
 
 > A small web app that displays broadcast status of a variety of twitch channels.
 
-> NOTE: project is still in development and not functional at this time.
+## Technologies Used
+VueJS Framework for View Layer
+HTML/CSS/JS
+Twitch API
+Vue Material UI Library
 
 ## Build Setup
 
