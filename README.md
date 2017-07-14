@@ -2,11 +2,15 @@
 
 > A small web app that displays broadcast status of a variety of twitch channels.
 
+## DEMO HERE
+https://juanfabrega.github.io/twitch-tv/
+
 ## Technologies Used
 * VueJS Framework for View Layer
 * HTML/CSS/JS
 * Twitch API
 * Vue Material UI Library
+
 
 ## Build Setup
 
